@@ -1,0 +1,171 @@
+---
+title: "Theming with bslib and thematic"
+output: 
+  html_document:
+    code_folding: show
+    toc: yes
+    toc_float: true
+    theme:
+      bg: "#202123"
+      fg: "#B8BCC2"
+      primary: "#EA80FC"
+      secondary: "#00DAC6"
+      base_font:
+        google: Prompt
+      heading_font:
+        google: Proza Libre
+---
+
+```{r setup, include=FALSE, echo=FALSE}
+if (requireNamespace("thematic")) 
+  thematic::thematic_rmd(font = "auto")
+```
+
+## R Markdown
+
+This is an R Markdown document themed with [`{bslib}` package](https://rstudio.github.io/bslib/). `{bslib}` makes it easy to customize the main colors and fonts of a `html_document`, [`flexdashboard::flex_dashboard`](https://flexdashboard-pkg.netlify.app/articles/articles/theme.html), [shiny::fluidPage()](https://shiny.rstudio.com/reference/shiny/latest/fluidPage.html), or more generally any website that uses [Bootstrap](https://getbootstrap.com/) for styling. The `theme` parameter in the yaml front-matter of this Rmd document describes a [`bslib::bs_theme()`](https://rstudio.github.io/bslib/reference/bs_theme.html) object, which provides access to 100s of [theming options](https://rstudio.github.io/bslib/articles/bs5-variables.html) (via its `...` argument) in addition to the main options demonstrated here (e.g., `bg`, `fg`, `primary`, etc).
+
+This particular example uses `{bslib}`'s default [Bootstrap version (which, at the time of writing, is Bootstrap 5)](https://rstudio.github.io/bslib/articles/bslib.html#versions). However, if reproducibility is important, it's recommended that you "lock-in" the version by adding `version: 5` to the `theme` definition.
+
+## Themed Plots {.tabset .tabset-pills}
+
+When running this document with [`{thematic}`](https://rstudio.github.io/thematic/) installed, the `thematic::thematic_rmd(font = "auto")` effectively translates `theme` (CSS) settings to new global theming defaults for `{ggplot2}`, `{lattice}`, and `{base}` R graphics:
+
+### ggplot2
+
+```{r}
+library(ggplot2)
+
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point() + geom_smooth() |> 
+  suppressMessages()
+```
+
+### lattice
+
+```{r}
+lattice::show.settings()
+```
+
+### base
+
+```{r}
+plot(pressure, col = thematic::thematic_get_option("accent"))
+```
+
+## Supported BS widgets
+
+
+### DT
+
+```{r}
+DT::datatable(datasets::anscombe)
+```
+
+
+### GGplotly
+
+```{r fig.showtext=TRUE}
+g <- ggplot(mpg, aes(displ, hwy)) +
+  geom_point() +
+  geom_smooth()
+plotly::ggplotly(g)
+```
+
+
+### echarts4r
+
+```{r fig.showtext=TRUE}
+library(echarts4r)
+data <- expand.grid(
+  x = seq(-3, 3, by = 0.05),
+  y = seq(-3, 3, by = 0.05)
+) |> 
+  dplyr::mutate(z = sin(x * x + y * y) * x / 3.14)
+data |> 
+  e_charts(x) |> 
+  e_surface(y, z, wireframe = list(show = FALSE)) |> 
+  e_visual_map(z)
+```
+
+```{r}
+library(echarts4r)
+les <- jsonlite::fromJSON("https://gist.githubusercontent.com/tyluRp/0d7a53f2a1f55cb3c6ffe22c67618267/raw/0684a839c3e49dac1157721ddd906eff8f9491d4/les-miserables.json")
+e_charts() |> 
+  e_graph(
+    layout = "circular", 
+    circular = list(
+      rotateLabel = TRUE
+    ),
+    roam = TRUE,
+    lineStyle = list(
+      color = "source",
+      curveness = 0.3
+    ),
+    label = list(
+      position = "right",
+      formatter = "{b}"
+    )
+  ) |>
+  e_graph_nodes(
+    nodes = les$nodes, 
+    names = name, 
+    value = value, 
+    size = size, 
+    category = grp
+  ) |> 
+  e_graph_edges(
+    edges = les$edges, 
+    source = from,
+    target = to
+  ) |>
+  e_tooltip()
+```
+
+
+### kableextra
+
+```{r}
+library(kableExtra)
+mtcars[1:5, 1:6] %>%
+  kbl() %>%
+  kable_styling()
+```
+
+## Not supported yet
+
+### Plotly
+
+```{r}
+library(plotly)
+fig <- plot_ly(z = ~volcano, type = "contour")
+fig
+```
+
+```{r}
+x <- c(1:100)
+random_y <- rnorm(100, mean = 0)
+data <- data.frame(x, random_y)
+fig <- plot_ly(data, x = ~x, y = ~random_y, type = 'scatter', mode = 'lines')
+fig
+```
+
+### Reactable
+
+```{r fig.showtext=TRUE}
+reactable::reactable(datasets::beaver1)
+```
+
+### ggiraph
+
+```{r}
+library(ggplot2)
+library(ggiraph)
+data <- mtcars
+data$carname <- row.names(data)
+gg_point = ggplot(data = data) +
+    geom_point_interactive(aes(x = wt, y = qsec, color = disp,
+    tooltip = carname, data_id = carname)) + 
+  theme_minimal()
+girafe(ggobj = gg_point)
+```

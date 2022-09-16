@@ -1,0 +1,15 @@
+default:
+  my_theme:
+    hight_lvl:
+      version: 5
+      bg: "#002B36"
+      fg: "#EEE8D5"
+      primary: "#2AA198"
+      base_font:
+        google: "Gochi Hand"
+    low_lvl:
+      btn-font-weight: 900
+      btn-font-size: "100%"
+      btn-padding-y: "2.0em"
+      btn-padding-x: "2.8em"
+      btn-border-radius: "2rem"
